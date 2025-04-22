@@ -17,13 +17,10 @@ jobs:
       - name: Install Fly.io CLI
         run: |
           curl -L https://fly.io/install.sh | sh
-          export PATH="$HOME/.fly/bin:$PATH"
-          fly version
-
-      - name: Authenticate with Fly.io
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: echo $FLY_API_TOKEN | fly auth token
+          echo "$HOME/.fly/bin" >> $GITHUB_PATH
+          export FLYCTL_INSTALL="/home/runner/.fly"
+          export PATH="$FLYCTL_INSTALL/bin:$PATH"
+          ln -s ~/.fly/bin/flyctl ~/.fly/bin/fly  # alias
 
       - name: Deploy with Fly.io
         env:

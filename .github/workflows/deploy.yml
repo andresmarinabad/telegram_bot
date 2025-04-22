@@ -31,13 +31,13 @@ jobs:
         run: fly deploy --remote-only
 
       - name: Notify on Telegram
-        if: success()  # Only run this step if the deploy was successful
+        if: success()
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           STATUS="SUCCESS"
-          TEXT="The bot has been successfully updated!\nVersion updated!\nRepo: \`${{ github.repository }}\`\nBranch: \`${{ github.ref_name }}\`"
+          TEXT="I have been successfully updated!\nVersion updated!"
           curl -s -X POST https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage \
             -d chat_id=$TELEGRAM_CHAT_ID \
             -d text="$TEXT" \

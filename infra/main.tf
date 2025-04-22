@@ -24,3 +24,15 @@ resource "fly_app" "bot" {
   org  = "personal"
 }
 
+resource "fly_machine" "bot_instance" {
+  app   = fly_app.bot.name
+  image = "registry.fly.io/${fly_app.bot.name}:latest"
+
+  env = {
+    TELEGRAM_BOT_TOKEN = var.telegram_bot_token
+  }
+
+  region = "mad"
+
+}
+

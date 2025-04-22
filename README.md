@@ -30,13 +30,19 @@ terraform init
 terraform apply
 ```
 
+4. A first manual deploy is mandatory in order to publish the image so the machine can be created with terraform and pull that image
+
+```bash
+flyctl deploy --remote-only --image-label latest
+```
+
 ## Environment Variables
 
 The bot reads the Telegram token from an environment variable:
 
 - `TELEGRAM_BOT_TOKEN` → your bot’s token from @BotFather
 
-This variable is injected via Terraform when deploying to Fly.io.
+This variable needs to be declared in Fly.io in order to be injected while deploy.
 
 ## JSON-based Keyword Responses
 

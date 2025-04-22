@@ -27,9 +27,11 @@ resource "fly_app" "bot" {
 resource "fly_machine" "bot_instance" {
   app   = fly_app.bot.name
   image = "registry.fly.io/${fly_app.bot.name}:latest"
+  name  = "${fly_app.bot.name}-machine"
 
   env = {
     TELEGRAM_BOT_TOKEN = var.telegram_bot_token
+    PORT               = "8080"
   }
 
   region = "mad"

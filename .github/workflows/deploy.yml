@@ -9,12 +9,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Fly.io CLI
+        run: |
+          curl -L https://fly.io/install.sh | sh
+          echo "$HOME/.fly/bin" >> $GITHUB_PATH
+          export FLYCTL_INSTALL="/home/runner/.fly"
+          export PATH="$FLYCTL_INSTALL/bin:$PATH"
 
       - name: Build and push Docker image
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
+          flyctl auth docker
           docker build -t registry.fly.io/god-bless-this-bot:latest .
           docker push registry.fly.io/god-bless-this-bot:latest
 

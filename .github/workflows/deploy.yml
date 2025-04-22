@@ -1,0 +1,44 @@
+name: Deploy Bot to Fly.io
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build and Deploy to Fly.io
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Fly.io CLI
+        run: |
+          curl -L https://fly.io/install.sh | sh
+          export PATH="$HOME/.fly/bin:$PATH"
+          fly version
+
+      - name: Authenticate with Fly.io
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: echo $FLY_API_TOKEN | fly auth token
+
+      - name: Deploy with Fly.io
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: fly deploy --remote-only
+
+      - name: Notify on Telegram
+        if: success()  # Only run this step if the deploy was successful
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          STATUS="SUCCESS"
+          TEXT="The bot has been successfully updated!\nVersion updated!\nRepo: \`${{ github.repository }}\`\nBranch: \`${{ github.ref_name }}\`"
+          curl -s -X POST https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage \
+            -d chat_id=$TELEGRAM_CHAT_ID \
+            -d text="$TEXT" \
+            -d parse_mode=Markdown

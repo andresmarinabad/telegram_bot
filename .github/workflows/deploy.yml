@@ -33,7 +33,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           STATUS="SUCCESS"
-          TEXT="I have been successfully updated!\nVersion updated!"
+          TEXT="Me he actualizado correctamente desde Github Actions"
           curl -s -X POST https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage \
             -d chat_id=$TELEGRAM_CHAT_ID \
             -d text="$TEXT" \

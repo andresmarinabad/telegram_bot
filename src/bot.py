@@ -19,7 +19,7 @@ def responder(update, context):
                 respuesta,
                 reply_to_message_id=update.message.message_id
             )
-            break  # Solo responde a la primera palabra que coincida
+            break
 
 def main():
     TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")

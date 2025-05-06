@@ -3,7 +3,7 @@ name: Deploy EC2 Python with AutoScaling
 on:
   push:
     branches:
-      - test
+      - main
 
 jobs:
   deploy:

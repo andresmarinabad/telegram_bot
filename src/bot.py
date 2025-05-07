@@ -9,7 +9,8 @@ from telegram.ext import Updater, MessageHandler, Filters
 # Config logger for CloudWatch
 logger = logging.getLogger("telegram_bot")
 logger.setLevel(logging.INFO)
-logger.addHandler(watchtower.CloudWatchLogHandler(log_group_name="TelegramBot"))
+boto3_client=boto3.client("logs", region_name="eu-west-1")
+logger.addHandler(watchtower.CloudWatchLogHandler(log_group_name="TelegramBot", boto3_client=boto3_client))
 
 
 # Load answers for the bot

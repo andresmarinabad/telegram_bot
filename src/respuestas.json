@@ -8,7 +8,7 @@
     "Jo t'ensenyaré qué es gran..."
   ],
   "gordo": [
-    "Tu si que estás gord@",
+    "Tu si que estás gordo",
     "Quieres ver algo gordo?",
     "Todo lo bueno viene en formato XL"
   ],
@@ -48,6 +48,11 @@
   ],
   "petita": [
     "Vols veure una cosa petita? No, espera"
+  ],
+  "palo": [
+    "Hablar contigo si que me da palo",
+    "Yo si que te voy a enseñar un palo",
+    "Quieres ver mi palo?"
   ],
   "test": [
     "esto es un test"

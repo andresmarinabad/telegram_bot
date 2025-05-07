@@ -1,6 +1,3 @@
-provider "aws" {
-  region = "eu-west-1"
-}
 
 resource "tls_private_key" "ssh_key" {
   algorithm = "RSA"
@@ -8,13 +5,17 @@ resource "tls_private_key" "ssh_key" {
 }
 
 resource "aws_key_pair" "generated_key" {
-  key_name   = "telegram-bot-key"
+  key_name   = "${local.default_tags.Project}-key"
   public_key = tls_private_key.ssh_key.public_key_openssh
+
+  tags = {
+    Name = "${local.default_tags.Project}-key"
+  }
 }
 
 resource "local_file" "private_key" {
   content         = tls_private_key.ssh_key.private_key_pem
-  filename        = "${path.module}/telegram-bot-key.pem"
+  filename        = "${path.module}/${local.default_tags.Project}-key.pem"
   file_permission = "0400"
 }
 
@@ -27,7 +28,7 @@ data "template_file" "init" {
 }
 
 resource "aws_launch_template" "telegram_bot_tpl" {
-  name_prefix   = "telegram-bot"
+  name_prefix   = "${local.default_tags.Project}-launch-template"
   image_id      = "ami-008d05461f83df5b1"
   instance_type = "t2.micro"
   key_name      = aws_key_pair.generated_key.key_name
@@ -38,7 +39,7 @@ resource "aws_launch_template" "telegram_bot_tpl" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name = "telegram-bot"
+      Name = "${local.default_tags.Project}-launch-template"
     }
   }
 
@@ -48,7 +49,7 @@ resource "aws_launch_template" "telegram_bot_tpl" {
 }
 
 resource "aws_autoscaling_group" "telegram_bot_asg" {
-  name              = "telegram-bot"
+  name              = "${local.default_tags.Project}-autoscaling-group"
   max_size          = 1
   min_size          = 1
   desired_capacity  = 1
@@ -62,23 +63,34 @@ resource "aws_autoscaling_group" "telegram_bot_asg" {
 
   tag {
     key                 = "Name"
-    value               = "telegram-bot"
+    value               = "${local.default_tags.Project}-autoscaling-group"
     propagate_at_launch = true
   }
 }
 
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "${local.default_tags.Project}-vpc"
+  }
 }
 
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${local.default_tags.Project}-public-subnet"
+  }
 }
 
 resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${local.default_tags.Project}-internet-gateway"
+  }
 }
 
 resource "aws_route_table" "public" {
@@ -88,6 +100,10 @@ resource "aws_route_table" "public" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.gw.id
   }
+
+  tags = {
+    Name = "${local.default_tags.Project}-route-table"
+  }
 }
 
 resource "aws_route_table_association" "a" {
@@ -96,7 +112,7 @@ resource "aws_route_table_association" "a" {
 }
 
 resource "aws_security_group" "telegram_bot_sg" {
-  name        = "telegram-bot-sg"
+  name        = "${local.default_tags.Project}-security-group"
   description = "Allow HTTP"
   vpc_id      = aws_vpc.main.id
 
@@ -119,5 +135,9 @@ resource "aws_security_group" "telegram_bot_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${local.default_tags.Project}-security-group"
   }
 }

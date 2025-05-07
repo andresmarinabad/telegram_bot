@@ -1,86 +1,96 @@
 
-# Telegram Bot on Fly.io with Terraform
+# Telegram Bot
 
-This project deploys a Telegram bot that responds to messages containing specific keywords. It runs on Fly.io using Docker, and the infrastructure is managed with Terraform. It also includes a GitHub Actions workflow for automatic deployment (CI/CD).
+This project consists of a Telegram bot that responds to messages in a group chat based on specific keywords. The bot is built using Python and is hosted on an AWS EC2 instance. The infrastructure is managed using Terraform, and automated actions are set up to handle changes in the source code.
 
-## Requirements
+## Project Structure
 
-- Python
-- Docker
-- Terraform
-- Fly.io CLI (`fly auth token`)
-- Telegram Bot Token (via [@BotFather](https://t.me/BotFather))
-- GitHub Actions (for CI/CD)
+The project has the following folder structure:
 
-## How to Use
-
-1. Clone this repository.
-
-2. Fill in your secrets in `terraform.tfvars`:
-
-```hcl
-fly_token           = "YOUR_FLY_API_TOKEN"
-telegram_bot_token  = "YOUR_TELEGRAM_BOT_TOKEN"
+```
+/telegram-bot-project
+├── infra/               # Contains Terraform configuration files for AWS EC2 instance setup
+├── src/                 # Contains the Python source code for the Telegram bot
+└── README.md            # Project description and instructions
 ```
 
-3. Deploy using Terraform:
+### `infra/`
+This folder contains the Terraform files to manage the infrastructure on AWS, including the creation of EC2 instances. When changes are made to the source code, an action is triggered to stop the EC2 instance.
+
+### `src/`
+This folder contains the Python code for the Telegram bot. The bot listens for messages in a Telegram group and checks if the message contains any word from a predefined list. For each keyword, the bot has several associated responses and randomly selects one to reply with.
+
+## Features
+
+- **Keyword Detection**: The bot listens for specific keywords in messages. If a message contains any of these keywords, the bot responds with one of several predefined responses.
+- **Random Response**: For each keyword, the bot has multiple possible responses, and it randomly selects one of them.
+- **AWS EC2 Automation**: An action is triggered whenever there are changes in the source code, automatically stopping the EC2 instance on AWS.
+- **Infrastructure as Code**: The infrastructure (EC2 instance) is set up and managed using Terraform, allowing easy provisioning and maintenance.
+
+## Prerequisites
+
+Before you can run the project, make sure you have the following installed:
+
+- Python 3.x
+- Terraform
+- AWS CLI (with proper IAM permissions)
+- Telegram Bot Token (to interact with the Telegram API)
+
+## Setup
+
+### 1. Clone the repository
+Clone the repository to your local machine:
 
 ```bash
+git clone https://github.com/andresmarinabad/telegram_bot.git
+cd telegram-bot-project
+```
+
+### 2. Set up the infrastructure (AWS EC2)
+Navigate to the `infra` directory and initialize Terraform:
+
+```bash
+cd infra
 terraform init
+```
+
+Next, apply the Terraform configuration to provision the AWS resources:
+
+```bash
 terraform apply
 ```
 
-4. A first manual deploy is mandatory in order to publish the image so the machine can be created with terraform and pull that image
+Terraform will create the necessary resources, including an EC2 instance. Ensure your AWS credentials are properly configured in your environment.
+
+### 3. Set up the bot
+Navigate to the `src` directory, and install the required Python dependencies:
 
 ```bash
-flyctl deploy --remote-only --image-label latest
+cd ../src
+pip install -r requirements.txt
 ```
 
-## Environment Variables
+### 4. Add your Telegram Bot Token
+The token is defined in terraform.tfvars and injected to the autoscaling group template when rendered
 
-The bot reads the Telegram token from an environment variable:
 
-- `TELEGRAM_BOT_TOKEN` → your bot’s token from @BotFather
+### 5. Run the bot
+To start the bot, run the following command:
 
-This variable needs to be declared in Fly.io in order to be injected while deploy.
-
-## JSON-based Keyword Responses
-
-The bot responds to messages containing specific words. These keywords and their possible replies are stored in `respuestas.json` like this:
-
-```json
-{
-  "hello": ["Hi!", "Hello there!", "How can I help?"],
-  "thanks": ["You're welcome!", "No problem!", "Anytime!"]
-}
+```bash
+python bot.py
 ```
 
-If the bot detects a word from the list, it replies with a random message from the associated options.
+The bot will start listening for messages in the Telegram group and respond based on the configured keywords.
 
+## AWS EC2 Auto-Stop Action
 
-## Folder Structure
+Whenever there is a change in the source code, the EC2 instance will be automatically stopped using an action. This ensures that the EC2 instance is not running unnecessarily when changes are being made, saving costs on AWS.
 
-```
-telegram-bot/
-├── bot.py
-├── respuestas.json
-├── Dockerfile
-├── fly.toml
-├── main.tf
-├── variables.tf
-├── terraform.tfvars     # Do not commit this file
-├── .gitignore
-├── .github/workflows/deploy.yml
-└── README.md
-```
+## Contributing
 
-## Security Tips
-
-- Never commit your `telegram_bot_token` or `fly_token` to the repository.
-- Use `terraform.tfvars` locally.
-- Use GitHub Actions secrets for CI/CD.
+Feel free to fork the repository, create issues, and submit pull requests. If you encounter any bugs or have feature requests, don't hesitate to contribute!
 
 ## License
 
-MIT – Free to use, fork, modify. Contributions welcome!
-
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -29,7 +29,9 @@ This folder contains the Python code for the Telegram bot. The bot listens for m
 
 ## Architecture
 
-[architecture.drawio](architecture.drawio)
+<p align="center">
+  <img src="docs/architecture.png" alt="Architecture Diagram">
+</p>
 
 
 ## Prerequisites

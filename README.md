@@ -27,6 +27,11 @@ This folder contains the Python code for the Telegram bot. The bot listens for m
 - **AWS EC2 Automation**: An action is triggered whenever there are changes in the source code, automatically stopping the EC2 instance on AWS.
 - **Infrastructure as Code**: The infrastructure (EC2 instance) is set up and managed using Terraform, allowing easy provisioning and maintenance.
 
+## Architecture
+
+[architecture.drawio](architecture.drawio)
+
+
 ## Prerequisites
 
 Before you can run the project, make sure you have the following installed:

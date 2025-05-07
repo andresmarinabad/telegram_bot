@@ -1,15 +1,30 @@
 import os
 import json
 import random
+import logging
+import watchtower
 from telegram.ext import Updater, MessageHandler, Filters
 
+# Config logger for CloudWatch
+logger = logging.getLogger("telegram_bot")
+logger.setLevel(logging.INFO)
 
+# Config CloudWatch Log Handler
+logger.addHandler(watchtower.CloudWatchLogHandler(
+    log_group="TelegramBotLogs", region_name="eu-west-1"
+))
+
+# Load answers for the bot
 with open("respuestas.json", "r", encoding="utf-8") as f:
     RESPUESTAS = json.load(f)
 
 def responder(update, context):
     if not update.message or not update.message.text:
         return
+
+    mensaje = update.message.text.lower()
+    logger.info(f"Mensaje recibido: {mensaje}")
+
 
     mensaje = update.message.text.lower()
     for palabra, posibles_respuestas in RESPUESTAS.items():
@@ -19,13 +34,23 @@ def responder(update, context):
                 respuesta,
                 reply_to_message_id=update.message.message_id
             )
+            logger.info(f"Respuesta enviada: {respuesta}")
             break
 
 def main():
     TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+    if not TOKEN:
+        logger.error("No se ha configurado el token del bot.")
+        return
+
     updater = Updater(TOKEN, use_context=True)
     dp = updater.dispatcher
+
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, responder))
+
+    # Iniciar el bot
+    logger.info("Bot iniciado y comenzando a recibir mensajes.")
     updater.start_polling()
     updater.idle()
 

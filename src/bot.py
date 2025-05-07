@@ -1,6 +1,7 @@
 import os
 import json
 import random
+import boto3
 import logging
 import watchtower
 from telegram.ext import Updater, MessageHandler, Filters
@@ -8,11 +9,8 @@ from telegram.ext import Updater, MessageHandler, Filters
 # Config logger for CloudWatch
 logger = logging.getLogger("telegram_bot")
 logger.setLevel(logging.INFO)
+logger.addHandler(watchtower.CloudWatchLogHandler(log_group_name="TelegramBot"))
 
-# Config CloudWatch Log Handler
-logger.addHandler(watchtower.CloudWatchLogHandler(
-    log_group="TelegramBotLogs", region_name="eu-west-1"
-))
 
 # Load answers for the bot
 with open("respuestas.json", "r", encoding="utf-8") as f:

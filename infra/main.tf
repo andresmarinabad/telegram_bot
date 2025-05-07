@@ -70,6 +70,7 @@ resource "aws_autoscaling_group" "telegram_bot_asg" {
     value               = "${local.default_tags.Project}-autoscaling-group"
     propagate_at_launch = true
   }
+
 }
 
 resource "aws_vpc" "main" {

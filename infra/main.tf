@@ -27,9 +27,18 @@ data "template_file" "init" {
   }
 }
 
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical (propietario oficial de Ubuntu)
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+}
+
 resource "aws_launch_template" "telegram_bot_tpl" {
   name_prefix   = "${local.default_tags.Project}-launch-template"
-  image_id      = "ami-008d05461f83df5b1"
+  image_id      = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   key_name      = aws_key_pair.generated_key.key_name
   user_data     = base64encode(data.template_file.init.rendered)

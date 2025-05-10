@@ -24,10 +24,8 @@ def responder(update, context):
     mensaje = update.message.text.lower()
     logger.info(f"Mensaje recibido: {mensaje}")
 
-
-    mensaje = update.message.text.lower()
     for palabra, posibles_respuestas in RESPUESTAS.items():
-        if palabra in mensaje:
+        if palabra in mensaje.split(' '):
             respuesta = random.choice(posibles_respuestas)
             update.message.reply_text(
                 respuesta,

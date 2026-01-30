@@ -1,4 +1,4 @@
-name: Deploy EC2 Python with AutoScaling
+name: Deploy AWS EC2 Python with AutoScaling
 
 on:
   push:

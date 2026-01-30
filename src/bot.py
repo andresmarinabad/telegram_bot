@@ -1,21 +1,29 @@
 import os
 import json
 import random
-import boto3
 import logging
-import watchtower
 from telegram.ext import Updater, MessageHandler, Filters
 
-# Config logger for CloudWatch
+# Config logger para archivo local
 logger = logging.getLogger("telegram_bot")
 logger.setLevel(logging.INFO)
-boto3_client=boto3.client("logs", region_name="eu-west-1")
-logger.addHandler(watchtower.CloudWatchLogHandler(log_group_name="TelegramBot", boto3_client=boto3_client))
 
+# Log a archivo persistente
+log_file_path = "/var/log/telegram-bot.log"
+fh = logging.FileHandler(log_file_path)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+logger.addHandler(fh)
 
-# Load answers for the bot
-with open("respuestas.json", "r", encoding="utf-8") as f:
-    RESPUESTAS = json.load(f)
+logger.info("Iniciando bot...")
+
+# Cargar respuestas del bot
+try:
+    with open("/opt/telegram_bot/src/respuestas.json", "r", encoding="utf-8") as f:
+        RESPUESTAS = json.load(f)
+except Exception as e:
+    logger.error(f"No se pudo cargar respuestas.json: {e}")
+    RESPUESTAS = {}
 
 def responder(update, context):
     if not update.message or not update.message.text:

@@ -1,24 +1,3 @@
-
-resource "tls_private_key" "ssh_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
-resource "aws_key_pair" "generated_key" {
-  key_name   = "${local.default_tags.Project}-key"
-  public_key = tls_private_key.ssh_key.public_key_openssh
-
-  tags = {
-    Name = "${local.default_tags.Project}-key"
-  }
-}
-
-resource "local_file" "private_key" {
-  content         = tls_private_key.ssh_key.private_key_pem
-  filename        = "${path.module}/${local.default_tags.Project}-key.pem"
-  file_permission = "0400"
-}
-
 data "template_file" "init" {
   template = file("${path.module}/user_data.tpl")
 
@@ -29,7 +8,7 @@ data "template_file" "init" {
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"] # Canonical (propietario oficial de Ubuntu)
+  owners      = ["099720109477"]
   filter {
     name   = "name"
     values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
@@ -40,8 +19,8 @@ resource "aws_launch_template" "telegram_bot_tpl" {
   name_prefix   = "${local.default_tags.Project}-launch-template"
   image_id      = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
-  key_name      = aws_key_pair.generated_key.key_name
-  user_data     = base64encode(data.template_file.init.rendered)
+
+  user_data = base64encode(data.template_file.init.rendered)
 
   vpc_security_group_ids = [aws_security_group.telegram_bot_sg.id]
 

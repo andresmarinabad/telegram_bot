@@ -3,15 +3,28 @@ set -e
 
 echo "=== STARTUP SCRIPT BEGIN ==="
 
-apt-get update -y
-apt-get upgrade -y
-apt-get install -y git python3.13 python3-pip curl
+sudo apt-get update -y
+sudo apt-get upgrade -y
+
+# Instalar dependencias necesarias
+sudo apt-get install -y software-properties-common curl git build-essential \
+libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev \
+libsqlite3-dev libffi-dev libbz2-dev wget git curl
+
+# Agregar PPA de deadsnakes para Python 3.13
+sudo add-apt-repository -y ppa:deadsnakes/ppa
+sudo apt-get update -y
+
+# Instalar Python 3.13 y herramientas relacionadas
+sudo apt-get install -y python3.13 python3.13-venv python3.13-dev
+
 
 # Instalar uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 
-cd /opt
+source $HOME/.local/bin/env
+
 
 if [ ! -d telegram_bot ]; then
   git clone https://github.com/andresmarinabad/telegram_bot.git
@@ -22,8 +35,6 @@ cd telegram_bot
 # Instalar dependencias con uv
 uv sync
 
-# Guardar el token como variable global del sistema
-echo "TELEGRAM_BOT_TOKEN=${telegram_bot_token}" >> /etc/environment
 
 # Crear servicio systemd
 cat <<EOF | sudo tee /etc/systemd/system/telegram-bot.service
@@ -33,10 +44,10 @@ After=network.target
 
 [Service]
 Environment=TELEGRAM_BOT_TOKEN=${telegram_bot_token}
-ExecStart=/opt/telegram_bot/.venv/bin/python3.13 /opt/telegram_bot/src/bot.py
+ExecStart=/home/andres_marin_abad/telegram_bot/.venv/bin/python3.13 /home/andres_marin_abad/telegram_bot/src/bot.py
 Restart=always
 User=root
-WorkingDirectory=/opt/telegram_bot/src
+WorkingDirectory=/home/andres_marin_abad/telegram_bot/src
 StandardOutput=syslog
 StandardError=syslog
 

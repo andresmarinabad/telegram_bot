@@ -2,30 +2,28 @@ import os
 import json
 import random
 import logging
-from telegram.ext import Updater, MessageHandler, Filters
+import asyncio
+from telegram import Update
+from telegram.ext import (
+    ApplicationBuilder,
+    ContextTypes,
+    MessageHandler,
+    filters,
+)
 
-# Config logger para archivo local
+# Logging a stdout (GCP lo recoge automáticamente)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
 logger = logging.getLogger("telegram_bot")
-logger.setLevel(logging.INFO)
 
-# Log a archivo persistente
-log_file_path = "/var/log/telegram-bot.log"
-fh = logging.FileHandler(log_file_path)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-logger.addHandler(fh)
+# Cargar respuestas
+src_path = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(src_path, "respuestas.json"), encoding="utf-8") as f:
+    RESPUESTAS = json.load(f)
 
-logger.info("Iniciando bot...")
-
-# Cargar respuestas del bot
-try:
-    with open("/opt/telegram_bot/src/respuestas.json", "r", encoding="utf-8") as f:
-        RESPUESTAS = json.load(f)
-except Exception as e:
-    logger.error(f"No se pudo cargar respuestas.json: {e}")
-    RESPUESTAS = {}
-
-def responder(update, context):
+async def responder(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text:
         return
 
@@ -33,9 +31,9 @@ def responder(update, context):
     logger.info(f"Mensaje recibido: {mensaje}")
 
     for palabra, posibles_respuestas in RESPUESTAS.items():
-        if palabra in mensaje.split(' '):
+        if palabra in mensaje.split():
             respuesta = random.choice(posibles_respuestas)
-            update.message.reply_text(
+            await update.message.reply_text(
                 respuesta,
                 reply_to_message_id=update.message.message_id
             )
@@ -43,21 +41,22 @@ def responder(update, context):
             break
 
 def main():
-    TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    if not token:
+        raise RuntimeError("TELEGRAM_BOT_TOKEN no configurado")
 
-    if not TOKEN:
-        logger.error("No se ha configurado el token del bot.")
-        return
+    app = (
+        ApplicationBuilder()
+        .token(token)
+        .build()
+    )
 
-    updater = Updater(TOKEN, use_context=True)
-    dp = updater.dispatcher
+    app.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, responder)
+    )
 
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, responder))
+    logger.info("=== BOT STARTED ===")
+    app.run_polling()
 
-    # Iniciar el bot
-    logger.info("Bot iniciado y comenzando a recibir mensajes.")
-    updater.start_polling()
-    updater.idle()
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

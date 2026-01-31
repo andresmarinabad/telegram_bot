@@ -5,7 +5,7 @@ echo "=== STARTUP SCRIPT BEGIN ==="
 
 apt-get update -y
 apt-get upgrade -y
-apt-get install -y git python3 python3-pip curl
+apt-get install -y git python3.10 python3-pip curl
 
 # Instalar uv
 curl -LsSf https://astral.sh/uv/install.sh | sh

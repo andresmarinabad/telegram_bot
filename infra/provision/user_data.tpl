@@ -26,7 +26,7 @@ uv sync
 echo "TELEGRAM_BOT_TOKEN=${telegram_bot_token}" >> /etc/environment
 
 # Crear servicio systemd
-cat <<EOF > /etc/systemd/system/telegram-bot.service
+cat <<EOF | sudo tee /etc/systemd/system/telegram-bot.service
 [Unit]
 Description=Telegram Bot
 After=network.target
@@ -37,16 +37,14 @@ ExecStart=/usr/bin/python3 /opt/telegram_bot/src/bot.py
 Restart=always
 User=root
 WorkingDirectory=/opt/telegram_bot/src
-StandardOutput=append:/var/log/telegram-bot.log
-StandardError=append:/var/log/telegram-bot.log
+StandardOutput=syslog
+StandardError=syslog
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-systemctl daemon-reexec
-systemctl daemon-reload
-systemctl enable telegram-bot
-systemctl start telegram-bot
+sudo systemctl daemon-reload
+sudo systemctl enable telegram-bot
+sudo systemctl start telegram-bot
 
-echo "=== BOT STARTED ==="

@@ -1,61 +1,95 @@
 #!/bin/bash
-set -e
+set -euxo pipefail
 
 echo "=== STARTUP SCRIPT BEGIN ==="
 
-sudo apt-get update -y
-sudo apt-get upgrade -y
+# ----------------------------
+# Crear usuario del servicio
+# ----------------------------
 
-# Instalar dependencias necesarias
-sudo apt-get install -y software-properties-common curl git build-essential \
-libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev \
-libsqlite3-dev libffi-dev libbz2-dev wget git curl
-
-# Agregar PPA de deadsnakes para Python 3.13
-sudo add-apt-repository -y ppa:deadsnakes/ppa
-sudo apt-get update -y
-
-# Instalar Python 3.13 y herramientas relacionadas
-sudo apt-get install -y python3.13 python3.13-venv python3.13-dev
-
-
-# Instalar uv
-curl -LsSf https://astral.sh/uv/install.sh | sh
-export PATH="$HOME/.local/bin:$PATH"
-
-source $HOME/.local/bin/env
-
-
-if [ ! -d telegram_bot ]; then
-  git clone https://github.com/andresmarinabad/telegram_bot.git
+# Crear usuario telegram con HOME real
+if ! id telegram >/dev/null 2>&1; then
+  useradd -r -m -d /home/telegram -s /usr/sbin/nologin telegram
+else
+  mkdir -p /home/telegram
+  chown telegram:telegram /home/telegram
 fi
 
-cd telegram_bot
 
-# Instalar dependencias con uv
+# ----------------------------
+# Paquetes base
+# ----------------------------
+apt-get update -y
+apt-get install -y \
+  software-properties-common \
+  curl \
+  git \
+  build-essential
+
+# ----------------------------
+# Instalar uv GLOBAL (clave)
+# ----------------------------
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Mover binario a PATH global
+install -m 0755 /root/.local/bin/uv /usr/local/bin/uv
+
+# ----------------------------
+# Clonar repo en /opt
+# ----------------------------
+if [ ! -d "${APP_DIR}" ]; then
+  git clone https://github.com/andresmarinabad/telegram_bot.git "${APP_DIR}"
+fi
+
+chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}"
+
+# ----------------------------
+# Crear venv y deps como el usuario
+# ----------------------------
+sudo -u "${APP_USER}" bash <<EOF
+set -euxo pipefail
+cd "${APP_DIR}"
 uv sync
+EOF
 
+# ----------------------------
+# Variables de entorno
+# ----------------------------
+cat <<EOF > "${ENV_FILE}"
+TELEGRAM_BOT_TOKEN=${telegram_bot_token}
+EOF
 
-# Crear servicio systemd
-cat <<EOF | sudo tee /etc/systemd/system/telegram-bot.service
+chmod 600 "${ENV_FILE}"
+
+# ----------------------------
+# systemd service
+# ----------------------------
+cat <<EOF > /etc/systemd/system/telegram-bot.service
 [Unit]
 Description=Telegram Bot
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
-Environment=TELEGRAM_BOT_TOKEN=${telegram_bot_token}
-ExecStart=/home/andres_marin_abad/telegram_bot/.venv/bin/python3.13 /home/andres_marin_abad/telegram_bot/src/bot.py
+Type=simple
+User=${APP_USER}
+WorkingDirectory=${APP_DIR}
+EnvironmentFile=${ENV_FILE}
+ExecStart=${APP_DIR}/.venv/bin/python src/bot.py
 Restart=always
-User=root
-WorkingDirectory=/home/andres_marin_abad/telegram_bot/src
-StandardOutput=syslog
-StandardError=syslog
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-sudo systemctl daemon-reload
-sudo systemctl enable telegram-bot
-sudo systemctl start telegram-bot
+# ----------------------------
+# Activar servicio
+# ----------------------------
+systemctl daemon-reload
+systemctl enable telegram-bot
+systemctl start telegram-bot
 
+echo "=== STARTUP SCRIPT END ==="

@@ -5,7 +5,7 @@ echo "=== STARTUP SCRIPT BEGIN ==="
 
 apt-get update -y
 apt-get upgrade -y
-apt-get install -y git python3.10 python3-pip curl
+apt-get install -y git python3.13 python3-pip curl
 
 # Instalar uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -33,7 +33,7 @@ After=network.target
 
 [Service]
 Environment=TELEGRAM_BOT_TOKEN=${telegram_bot_token}
-ExecStart=/usr/bin/python3 /opt/telegram_bot/src/bot.py
+ExecStart=/opt/telegram_bot/.venv/bin/python3.13 /opt/telegram_bot/src/bot.py
 Restart=always
 User=root
 WorkingDirectory=/opt/telegram_bot/src

@@ -14,13 +14,6 @@ if ! id telegram >/dev/null 2>&1; then
   usermod -aG docker telegram
 fi
 
-# 3. Guardar el Token en un archivo de entorno persistente
-# Lo guardamos en /etc/profile.d para que esté disponible en sesiones SSH
-cat <<EOF > /etc/profile.d/bot_env.sh
-export TELEGRAM_BOT_TOKEN="${telegram_bot_token}"
-EOF
-chmod 644 /etc/profile.d/bot_env.sh
-
 # 4. Limpieza preventiva (Opcional)
 # Asegurarse de que no haya restos de instalaciones manuales previas
 systemctl stop telegram-bot || true

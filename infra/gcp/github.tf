@@ -47,6 +47,12 @@ resource "google_service_account_iam_member" "github_sa_user" {
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_owner}/${var.repo}"
 }
 
+resource "google_project_iam_member" "sa_user_project" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${google_service_account.vm_sa_github.email}"
+}
+
 # 6. Permiso a la SA para impersonate y auto generarse un token de acceso
 resource "google_service_account_iam_member" "github_sa_impersonation" {
   service_account_id = google_service_account.vm_sa_github.name
@@ -54,7 +60,8 @@ resource "google_service_account_iam_member" "github_sa_impersonation" {
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_owner}/${var.repo}"
 }
 
-# 7. Crear las variables y secretos para GitHub Actions
+### GitHub Actions ###
+
 # Secreto para el Workload Identity Provider
 resource "github_actions_secret" "wif_provider" {
   repository      = var.repo
@@ -88,4 +95,11 @@ resource "github_actions_secret" "project_id" {
   repository      = var.repo
   secret_name     = "gcloud_project_id"
   plaintext_value = var.project_id
+}
+
+# TELEGRAM BOT TOKEN
+resource "github_actions_secret" "telegram_bot_token" {
+  repository      = var.repo
+  secret_name     = "telegram_bot_token"
+  plaintext_value = var.telegram_bot_token
 }

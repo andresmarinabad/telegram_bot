@@ -55,12 +55,6 @@ resource "google_compute_firewall" "allow_ssh" {
   source_ranges = ["0.0.0.0/0"]
 }
 
-# Service Account
-resource "google_service_account" "vm_sa" {
-  account_id   = "${var.project}-vm-sa"
-  display_name = "VM Service Account"
-}
-
 # Startup Script
 data "template_file" "init" {
   template = file("${path.module}/../provision/user_data.tpl")
@@ -100,10 +94,9 @@ resource "google_compute_instance" "telegram_bot" {
   }
 
   service_account {
-    email  = google_service_account.vm_sa.email
+    email  = google_service_account.vm_sa_github.email
     scopes = ["cloud-platform"]
   }
 
   depends_on = [google_project_service.compute]
 }
-

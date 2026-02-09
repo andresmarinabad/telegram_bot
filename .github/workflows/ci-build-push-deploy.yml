@@ -2,12 +2,12 @@ name: CICD - Build Publish Deploy
 on:
   push:
     branches: [main]
-    # paths-ignore:
-    #   - "**.tf"
-    #   - "**.md"
-    #   - ".gitignore"
-    #   - "infra/**"
-    #   - ".github/**"
+    paths-ignore:
+      - "**.tf"
+      - "**.md"
+      - ".gitignore"
+      - "infra/**"
+      - ".github/**"
 
 jobs:
   build-and-push:
@@ -55,7 +55,6 @@ jobs:
             --quiet \
             --strict-host-key-checking=no \
             --command "
-            source /etc/profile.d/bot_env.sh
             sudo docker pull ghcr.io/${{ github.repository }}:${{ github.sha }}
             sudo docker stop ${{ secrets.container_name }} || true
             sudo docker rm ${{ secrets.container_name }} || true

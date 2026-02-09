@@ -1,0 +1,67 @@
+name: CICD - Build Publish Deploy
+on:
+  push:
+    branches: [main]
+    # paths-ignore:
+    #   - "**.tf"
+    #   - "**.md"
+    #   - ".gitignore"
+    #   - "infra/**"
+    #   - ".github/**"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          # Aquí van tus datos de Workload Identity de Terraform
+          workload_identity_provider: ${{ secrets.workload_identity_provider }}
+          service_account: ${{ secrets.gcloud_service_account }}
+
+      - name: SSH and CD -
+        run: |
+          gcloud compute ssh ${{ secrets.container_name }} \
+            --zone ${{ secrets.gcloud_zone }} \
+            --project ${{ secrets.gcloud_project_id }} \
+            --quiet \
+            --strict-host-key-checking=no \
+            --command "
+            source /etc/profile.d/bot_env.sh
+            docker pull ghcr.io/${{ github.repository }}:${{ github.sha }}
+            docker stop ${{ secrets.container_name }} || true
+            docker rm ${{ secrets.container_name }} || true
+            docker image prune -f
+            docker run -d --name ${{ secrets.container_name }} \
+              --restart always \
+              --memory='800m' \
+              -e TELEGRAM_BOT_TOKEN=\$TELEGRAM_BOT_TOKEN \
+              ghcr.io/${{ github.repository }}:${{ github.sha }}
+          "

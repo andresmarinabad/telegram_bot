@@ -33,7 +33,7 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
   }
 
   attribute_condition = "assertion.repository_owner == '${var.github_owner}'"
-  
+
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
   }
@@ -47,7 +47,14 @@ resource "google_service_account_iam_member" "github_sa_user" {
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_owner}/${var.repo}"
 }
 
-# 6. Crear las variables y secretos para GitHub Actions
+# 6. Permiso a la SA para impersonate y auto generarse un token de acceso
+resource "google_service_account_iam_member" "github_sa_impersonation" {
+  service_account_id = google_service_account.vm_sa_github.name
+  role               = "roles/iam.serviceAccountTokenCreator" 
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_owner}/${var.repo}"
+}
+
+# 7. Crear las variables y secretos para GitHub Actions
 # Secreto para el Workload Identity Provider
 resource "github_actions_secret" "wif_provider" {
   repository      = var.repo
@@ -74,4 +81,11 @@ resource "github_actions_secret" "vm_zone" {
   repository      = var.repo
   secret_name     = "gcloud_zone"
   plaintext_value = google_compute_instance.telegram_bot.zone
+}
+
+# ID del proyecto
+resource "github_actions_secret" "project_id" {
+  repository      = var.repo
+  secret_name     = "gcloud_project_id"
+  plaintext_value = var.project_id
 }

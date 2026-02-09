@@ -33,3 +33,9 @@ variable "github_token" {
   type = string
   description = "Token de GitHub"
 }
+
+variable "template_vars" {
+  type        = map(any)
+  description = "Mapa libre de variables para el script de inicio"
+  default     = {}
+}

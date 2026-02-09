@@ -59,9 +59,7 @@ resource "google_compute_firewall" "allow_ssh" {
 data "template_file" "init" {
   template = file("${path.module}/../provision/user_data.tpl")
 
-  vars = {
-    telegram_bot_token = var.telegram_bot_token
-  }
+  vars = var.template_vars
 
 }
 

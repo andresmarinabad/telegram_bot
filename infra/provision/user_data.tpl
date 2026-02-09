@@ -3,93 +3,27 @@ set -euxo pipefail
 
 echo "=== STARTUP SCRIPT BEGIN ==="
 
-# ----------------------------
-# Crear usuario del servicio
-# ----------------------------
+# 1. Instalar Docker de forma oficial y rápida
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
 
-# Crear usuario telegram con HOME real
+# 2. Crear usuario del servicio y añadirlo al grupo docker
+# Esto permite que el usuario maneje contenedores
 if ! id telegram >/dev/null 2>&1; then
-  useradd -r -m -d /home/telegram -s /usr/sbin/nologin telegram
-else
-  mkdir -p /home/telegram
-  chown telegram:telegram /home/telegram
+  useradd -r -m -d /home/telegram -s /bin/bash telegram
+  usermod -aG docker telegram
 fi
 
-
-# ----------------------------
-# Paquetes base
-# ----------------------------
-apt-get update -y
-apt-get install -y \
-  software-properties-common \
-  curl \
-  git \
-  build-essential
-
-# ----------------------------
-# Instalar uv GLOBAL (clave)
-# ----------------------------
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Mover binario a PATH global
-install -m 0755 /root/.local/bin/uv /usr/local/bin/uv
-
-# ----------------------------
-# Clonar repo en /opt
-# ----------------------------
-if [ ! -d "${APP_DIR}" ]; then
-  git clone https://github.com/andresmarinabad/telegram_bot.git "${APP_DIR}"
-fi
-
-chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}"
-
-# ----------------------------
-# Crear venv y deps como el usuario
-# ----------------------------
-sudo -u "${APP_USER}" bash <<EOF
-set -euxo pipefail
-cd "${APP_DIR}"
-uv sync
+# 3. Guardar el Token en un archivo de entorno persistente
+# Lo guardamos en /etc/profile.d para que esté disponible en sesiones SSH
+cat <<EOF > /etc/profile.d/bot_env.sh
+export TELEGRAM_BOT_TOKEN="${telegram_bot_token}"
 EOF
+chmod 644 /etc/profile.d/bot_env.sh
 
-# ----------------------------
-# Variables de entorno
-# ----------------------------
-cat <<EOF > "${ENV_FILE}"
-TELEGRAM_BOT_TOKEN=${telegram_bot_token}
-EOF
+# 4. Limpieza preventiva (Opcional)
+# Asegurarse de que no haya restos de instalaciones manuales previas
+systemctl stop telegram-bot || true
+systemctl disable telegram-bot || true
 
-chmod 600 "${ENV_FILE}"
-
-# ----------------------------
-# systemd service
-# ----------------------------
-cat <<EOF > /etc/systemd/system/telegram-bot.service
-[Unit]
-Description=Telegram Bot
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=simple
-User=${APP_USER}
-WorkingDirectory=${APP_DIR}
-EnvironmentFile=${ENV_FILE}
-ExecStart=${APP_DIR}/.venv/bin/python src/bot.py
-Restart=always
-RestartSec=5
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# ----------------------------
-# Activar servicio
-# ----------------------------
-systemctl daemon-reload
-systemctl enable telegram-bot
-systemctl start telegram-bot
-
-echo "=== STARTUP SCRIPT END ==="
+echo "=== STARTUP SCRIPT READY FOR DOCKER DEPLOYS ==="

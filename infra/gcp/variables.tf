@@ -18,3 +18,18 @@ variable "telegram_bot_token" {
   description = "Telegram Bot Token"
   type        = string
 }
+
+variable "github_owner" {
+  type = string
+  description = "GitHub repo owner"
+}
+
+variable "repo" {
+  type = string
+  description = "Repository name"
+}
+
+variable "github_token" {
+  type = string
+  description = "Token de GitHub"
+}

@@ -25,36 +25,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/telegram-bot:${{ github.sha }}
-
-#   deploy:
-#     needs: build-and-push
-#     runs-on: ubuntu-latest
-#     permissions:
-#       id-token: write # Para OIDC de Google
-
-#     steps:
-#       - id: "auth"
-#         uses: "google-github-actions/auth@v2"
-#         with:
-#           workload_identity_provider: "tu-proveedor-de-terraform"
-#           service_account: "tu-sa@proyecto.iam.gserviceaccount.com"
-
-#       - name: Deploy to VM via gcloud SSH
-#         run: |
-#           gcloud compute ssh bot-telegram-vm --zone us-central1-a --command "
-#             # Loguearse en GHCR desde la VM (usando un Personal Access Token con permiso de read:packages)
-#             echo '${{ secrets.GH_READ_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-#             # Bajar la nueva imagen
-#             docker pull ghcr.io/${{ github.repository_owner }}/telegram-bot:latest
-
-#             # Parar el anterior y arrancar el nuevo usando el token de la VM
-#             docker stop bot-container || true
-#             docker rm bot-container || true
-
-#             source /etc/environment
-#             docker run -d --name bot-container \
-#               -e TELEGRAM_BOT_TOKEN=\$TELEGRAM_BOT_TOKEN \
-#               ghcr.io/${{ github.repository_owner }}/telegram-bot:latest
-#           "
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}

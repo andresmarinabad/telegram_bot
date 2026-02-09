@@ -16,6 +16,7 @@
           buildInputs = with pkgs; [
             uv
             python313
+            opentofu
           ];
         };
       });

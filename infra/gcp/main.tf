@@ -67,10 +67,6 @@ data "template_file" "init" {
 
   vars = {
     telegram_bot_token = var.telegram_bot_token
-    APP_DIR            = "/opt/telegram_bot"
-    APP_USER           = "telegram"
-    APP_NAME           = "telegram-bot"
-    ENV_FILE           = "/etc/telegram-bot.env"
   }
 
 }

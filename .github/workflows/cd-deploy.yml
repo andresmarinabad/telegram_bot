@@ -1,4 +1,4 @@
-name: Build and Deploy Bot
+name: CD - Deploy Bot
 
 on:
   #   push:
@@ -18,9 +18,9 @@ jobs:
           workload_identity_provider: ${{ secrets.workload_identity_provider }}
           service_account: ${{ secrets.gcloud_service_account }}
 
-      - name: SSH and Deploy
+      - name: SSH and CD -
         run: |
-          gcloud compute ssh ${{ secrets.gcloud_vm_name }} --zone ${{ secrets.gcloud_zone }} --command "
+          gcloud compute ssh ${{ secrets.container_name }} --zone ${{ secrets.gcloud_zone }} --command "
             # 1. Cargar el token guardado por el startup script
             source /etc/profile.d/bot_env.sh
 

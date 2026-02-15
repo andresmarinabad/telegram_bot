@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket  = "my-telegram-bot-486909-tfstate"
+    bucket  = "oceanic-cache-487515-g5-tfstate"
     prefix  = "terraform/state"
   }
 }

@@ -3,64 +3,36 @@
     "quires ver algo grande?",
     "yo si que te voy a enseñar algo GRANDE"
   ],
-  "gran": [
-    "vols veure una cosa gran?",
-    "jo t'ensenyaré qué es gran..."
-  ],
+  "gran": ["vols veure una cosa gran?", "jo t'ensenyaré qué es gran..."],
   "gordo": [
     "tu si que estás gordo",
     "quieres ver algo gordo?",
     "todo lo bueno viene en formato XL"
   ],
-  "largo": [
-    "quieres ver algo largo?"
-  ],
-  "llarg": [
-    "vols veure una cosa llarga?",
-    "vols veure lo que tinc llarg?"
-  ],
-  "miembro": [
-    "quieres ver un miembro?"
-  ],
-  "lotería": [
-    "si quieres ganar la lotería bajame los pantalones..."
-  ],
-  "loteria": [
-    "si quieres ganar la lotería bajame los pantalones..."
-  ],
+  "largo": ["quieres ver algo largo?"],
+  "llarg": ["vols veure una cosa llarga?", "vols veure lo que tinc llarg?"],
+  "miembro": ["quieres ver un miembro?"],
+  "lotería": ["si quieres ganar la lotería bajame los pantalones..."],
+  "loteria": ["si quieres ganar la lotería bajame los pantalones..."],
   "potente": [
     "tu si que estás potente!",
     "quieres potencia? Tengo Kw de sobra"
   ],
-  "duro": [
-    "quieres ver algo duro?",
-    "duro, pero con amor"
-  ],
+  "duro": ["quieres ver algo duro?", "duro, pero con amor"],
   "oscuro": [
     "oscuro como mi historial de búsquedas",
     "oscuro, misterioso y un poco travieso"
   ],
-  "curvo": [
-    "quires ver algo curvo?"
-  ],
-  "pequeño": [
-    "quieres ver algo pequeño? Espera... no!"
-  ],
-  "petita": [
-    "vols veure una cosa petita? No, espera"
-  ],
+  "curvo": ["quires ver algo curvo?"],
+  "pequeño": ["quieres ver algo pequeño? Espera... no!"],
+  "petita": ["vols veure una cosa petita? No, espera"],
   "palo": [
     "hablar contigo si que me da palo",
     "yo si que te voy a enseñar un palo",
     "quieres ver mi palo?"
   ],
-  "pasada": [
-    "sabes qué es una pasada?"
-  ],
-  "levanta": [
-    "yo si que tengo una cosa que se levanta..."
-  ],
-  "test": [
-    "esto es un test"
-  ]
+  "pasada": ["sabes qué es una pasada?"],
+  "levanta": ["yo si que tengo una cosa que se levanta..."],
+  "tienro": ["tu si que te vas a comer algo tierno"],
+  "test": ["esto es un test"]
 }

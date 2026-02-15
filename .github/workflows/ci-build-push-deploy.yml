@@ -8,6 +8,7 @@ on:
       - ".gitignore"
       - "infra/**"
       - ".github/**"
+  workflow_dispatch:
 
 jobs:
   build-and-push:

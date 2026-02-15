@@ -43,25 +43,25 @@ jobs:
         uses: "google-github-actions/auth@v2"
         with:
           # Aquí van tus datos de Workload Identity de Terraform
-          workload_identity_provider: ${{ secrets.workload_identity_provider }}
-          service_account: ${{ secrets.gcloud_service_account }}
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: SSH and CD -
         run: |
 
-          gcloud compute ssh ${{ secrets.container_name }} \
-            --zone ${{ secrets.gcloud_zone }} \
-            --project ${{ secrets.gcloud_project_id }} \
+          gcloud compute ssh ${{ secrets.VM_NAME }} \
+            --zone ${{ secrets.VM_ZONE }} \
+            --project ${{ secrets.GCP_PROJECT_ID }} \
             --quiet \
             --strict-host-key-checking=no \
             --command "
             sudo docker pull ghcr.io/${{ github.repository }}:${{ github.sha }}
-            sudo docker stop ${{ secrets.container_name }} || true
-            sudo docker rm ${{ secrets.container_name }} || true
+            sudo docker stop ${{ secrets.VM_NAME }} || true
+            sudo docker rm ${{ secrets.VM_NAME }} || true
             sudo docker image prune -f
-            sudo docker run -d --name ${{ secrets.container_name }} \
+            sudo docker run -d --name ${{ secrets.VM_NAME }} \
               --restart always \
               --memory='800m' \
-              -e TELEGRAM_BOT_TOKEN=${{ secrets.telegram_bot_token }} \
+              -e TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} \
               ghcr.io/${{ github.repository }}:${{ github.sha }}
           "

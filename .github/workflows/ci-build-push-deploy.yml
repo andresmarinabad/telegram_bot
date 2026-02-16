@@ -9,8 +9,9 @@ on:
       - "infra/**"
       - ".github/**"
 permissions:
-  contents: write
-  pull-requests: read
+  contents: read
+  packages: write
+  id-token: write
 
 jobs:
   build-push-deploy:

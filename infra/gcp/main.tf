@@ -1,5 +1,5 @@
 module "telegram_bot_infra" {
-  source = "../../modules/gcp-github-bot"
+  source = "github.com/CodeForgeGuild/tf-modules//modules/gcp-github-telegram-bot?ref=v0"
 
   project_id   = var.project_id
   region       = var.region

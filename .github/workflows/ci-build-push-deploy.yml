@@ -8,61 +8,18 @@ on:
       - ".gitignore"
       - "infra/**"
       - ".github/**"
-  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: read
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-    steps:
-      - id: "auth"
-        uses: "google-github-actions/auth@v2"
-        with:
-          # Aquí van tus datos de Workload Identity de Terraform
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
-      - name: SSH and CD -
-        run: |
-
-          gcloud compute ssh ${{ secrets.VM_NAME }} \
-            --zone ${{ secrets.VM_ZONE }} \
-            --project ${{ secrets.GCP_PROJECT_ID }} \
-            --quiet \
-            --strict-host-key-checking=no \
-            --command "
-            sudo docker pull ghcr.io/${{ github.repository }}:${{ github.sha }}
-            sudo docker stop ${{ secrets.VM_NAME }} || true
-            sudo docker rm ${{ secrets.VM_NAME }} || true
-            sudo docker image prune -f
-            sudo docker run -d --name ${{ secrets.VM_NAME }} \
-              --restart always \
-              --memory='800m' \
-              -e TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} \
-              ghcr.io/${{ github.repository }}:${{ github.sha }}
-          "
+  build-push-deploy:
+    uses: CodeForgeGuild/ci-actions/.github/workflows/build-push-deploy.yml@v0
+    secrets:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      VM_NAME: ${{ secrets.VM_NAME }}
+      VM_ZONE: ${{ secrets.VM_ZONE }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
